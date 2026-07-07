@@ -1,10 +1,17 @@
 import { PrismaClient } from '@prisma/client';
-import dailyData from '../../data/daily_data.json';
+import fs from 'fs';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
+function loadDailyData(): any {
+  const dataPath = path.resolve(process.cwd(), '..', 'data', 'daily_data.json');
+  const raw = fs.readFileSync(dataPath, 'utf-8');
+  return JSON.parse(raw);
+}
+
 async function main() {
-  const payload = dailyData as any;
+  const payload = loadDailyData();
   await prisma.dailyReport.upsert({
     where: { date: payload.date },
     update: {
