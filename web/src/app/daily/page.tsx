@@ -56,9 +56,19 @@ export default function DailyPage() {
     ? {
         backgroundColor: 'transparent',
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: '#14161c', borderColor: 'rgba(255,255,255,0.08)', textStyle: { color: '#e2e4e9' } },
-        grid: { left: '3%', right: '4%', bottom: '3%', top: '8%', containLabel: true },
-        xAxis: { type: 'category', data: report.sectors.map((s) => s.name), axisLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } }, axisLabel: { color: '#6b7080' } },
+        grid: { left: '3%', right: '4%', bottom: '18%', top: '8%', containLabel: true },
+        xAxis: {
+          type: 'category',
+          data: report.sectors.map((s) => s.name),
+          axisLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } },
+          axisLabel: { color: '#6b7080', interval: 0, rotate: 45, fontSize: 11 },
+          axisTick: { alignWithLabel: true },
+        },
         yAxis: { type: 'value', min: -5, max: 5, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.03)' } }, axisLabel: { color: '#6b7080' } },
+        dataZoom: [
+          { type: 'inside', start: 0, end: Math.min(100, (20 / report.sectors.length) * 100) },
+          { type: 'slider', start: 0, end: Math.min(100, (20 / report.sectors.length) * 100), height: 16, bottom: 8, borderColor: 'rgba(255,255,255,0.06)', fillerColor: 'rgba(91,140,255,0.2)', handleStyle: { color: '#5b8cff' }, textStyle: { color: '#6b7080' } },
+        ],
         series: [{
           data: report.sectors.map((s) => ({
             value: s.score,
