@@ -1,0 +1,51 @@
+[
+  {
+    "date": "2026-07-07",
+    "sentiment": "偏多",
+    "score": 59,
+    "change": "+0%",
+    "sectors": 40
+  },
+  {
+    "date": "2026-07-02",
+    "sentiment": "偏多",
+    "score": 68,
+    "change": "+12%",
+    "sectors": 8
+  },
+  {
+    "date": "2026-07-01",
+    "sentiment": "中性",
+    "score": 56,
+    "change": "-4%",
+    "sectors": 8
+  },
+  {
+    "date": "2026-06-30",
+    "sentiment": "偏多",
+    "score": 60,
+    "change": "+5%",
+    "sectors": 8
+  },
+  {
+    "date": "2026-06-27",
+    "sentiment": "中性",
+    "score": 55,
+    "change": "+7%",
+    "sectors": 8
+  },
+  {
+    "date": "2026-06-26",
+    "sentiment": "中性",
+    "score": 48,
+    "change": "-4%",
+    "sectors": 8
+  },
+  {
+    "date": "2026-06-25",
+    "sentiment": "中性",
+    "score": 52,
+    "change": "+2%",
+    "sectors": 8
+  }
+]

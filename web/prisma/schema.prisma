@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model DailyReport {
+  id             String     @id @default(cuid())
+  date           String     @unique
+  overallScore   Int
+  sentimentLabel String
+  newsCount      Int
+  bullCount      Int
+  bearCount      Int
+  neutralCount   Int
+  reportText     String
+  sectors        Sector[]
+  topEvents      TopEvent[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Sector {
+  id       String      @id @default(cuid())
+  name     String
+  score    Float
+  label    String
+  events   String      // JSON string array
+  reportId String
+  report   DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}
+
+model TopEvent {
+  id        String      @id @default(cuid())
+  title     String
+  sentiment String
+  intensity String
+  sectors   String
+  impact    String
+  reportId  String
+  report    DailyReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+
+  @@index([reportId])
+}

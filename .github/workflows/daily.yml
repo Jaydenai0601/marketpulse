@@ -1,0 +1,46 @@
+name: Daily MarketPulse Update
+
+on:
+  schedule:
+    # 北京时间每天 18:00 = UTC 10:00
+    - cron: '0 10 * * *'
+  workflow_dispatch:
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run crawler
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: python backend/run.py
+
+      - name: Sync to Next.js database
+        env:
+          NEXTJS_URL: ${{ secrets.NEXTJS_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: python backend/sync_to_api.py
+
+      - name: Commit data files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add data/
+          git diff --cached --quiet || git commit -m "chore: update daily data $(date +%F)"
+          git push

@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.env
+.venv/
+venv/
+
+# Data caches (optional: archive/ can be committed for demo, but daily_data.json is regenerated)
+data/daily_data.json
+
+# OS / Editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# Next.js
+web/node_modules
+web/.next
+web/out
+web/*.tsbuildinfo
+web/prisma/dev.db
+web/prisma/dev.db-journal

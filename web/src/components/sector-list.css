@@ -1,0 +1,109 @@
+.sector-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.sector-item:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.sector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+}
+
+.sector-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 0;
+}
+
+.sector-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #e2e4e9;
+  min-width: 70px;
+}
+
+.sector-score {
+  font-size: 15px;
+  font-weight: 600;
+  min-width: 34px;
+  text-align: right;
+}
+
+.sector-bar-wrap {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 3px;
+  overflow: hidden;
+  min-width: 60px;
+}
+
+.sector-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+.sector-chevron {
+  color: #6b7080;
+  font-size: 12px;
+  transition: transform 0.2s;
+  margin-left: 10px;
+}
+
+.sector-chevron.open {
+  transform: rotate(180deg);
+}
+
+.sector-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+}
+
+.sector-detail.open {
+  max-height: 300px;
+  padding-bottom: 14px;
+}
+
+.sector-event {
+  font-size: 13px;
+  color: #8b8f99;
+  padding: 6px 0 6px 24px;
+  position: relative;
+  line-height: 1.5;
+}
+
+.sector-event::before {
+  content: '•';
+  position: absolute;
+  left: 10px;
+  color: #5b8cff;
+}
+
+@media (max-width: 768px) {
+  .sector-header {
+    padding: 12px 0;
+  }
+
+  .sector-left {
+    gap: 10px;
+  }
+
+  .sector-name {
+    min-width: 60px;
+    font-size: 13px;
+  }
+
+  .sector-score {
+    font-size: 14px;
+  }
+}

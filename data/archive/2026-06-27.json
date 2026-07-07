@@ -1,0 +1,100 @@
+{
+  "date": "2026-06-27",
+  "overall_score": 55,
+  "sentiment_label": "中性",
+  "news_count": 42,
+  "bull_count": 29,
+  "bear_count": 11,
+  "neutral_count": 2,
+  "sectors": [
+    {
+      "name": "AI",
+      "score": 3.9,
+      "label": "强偏多",
+      "events": [
+        "大模型应用落地加速"
+      ]
+    },
+    {
+      "name": "新能源",
+      "score": 4.5,
+      "label": "强偏多",
+      "events": [
+        "补贴新规预期升温"
+      ]
+    },
+    {
+      "name": "半导体",
+      "score": 3.0,
+      "label": "偏多",
+      "events": [
+        "国产替代重大突破"
+      ]
+    },
+    {
+      "name": "汽车",
+      "score": 2.5,
+      "label": "偏多",
+      "events": [
+        "新能源车销量超预期"
+      ]
+    },
+    {
+      "name": "医药",
+      "score": 1.2,
+      "label": "偏多",
+      "events": [
+        "集采影响消化"
+      ]
+    },
+    {
+      "name": "消费",
+      "score": -1.0,
+      "label": "中性",
+      "events": [
+        "消费数据平淡"
+      ]
+    },
+    {
+      "name": "银行",
+      "score": -1.4,
+      "label": "偏空",
+      "events": [
+        "息差收窄预期"
+      ]
+    },
+    {
+      "name": "房地产",
+      "score": -3.3,
+      "label": "偏空",
+      "events": [
+        "销售同比下滑8%"
+      ]
+    }
+  ],
+  "top_events": [
+    {
+      "title": "国务院发布新能源补贴延续政策",
+      "sentiment": "利好",
+      "intensity": "强",
+      "sectors": "新能源、锂电池、光伏",
+      "impact": "打消补贴退坡担忧，产业链中期盈利预期修复"
+    },
+    {
+      "title": "6月商品房销售面积同比-8%，环比-12%",
+      "sentiment": "利空",
+      "intensity": "中",
+      "sectors": "房地产、建材、家电",
+      "impact": "地产链复苏低于预期，拖累相关板块情绪"
+    },
+    {
+      "title": "半导体设备国产化项目获重大突破",
+      "sentiment": "利好",
+      "intensity": "中",
+      "sectors": "半导体、设备材料、光刻胶",
+      "impact": "技术突破降低对外依赖，提升板块估值中枢"
+    }
+  ],
+  "report_text": "📰 市场情绪日报 — 2026-06-27\n\n━━ 整体情绪 ━━━━━━━━━\n今日市场情绪：中性（55/100）\n核心驱动：详见当日新闻分析\n\n（本日为演示归档数据，实际运行 backend/run.py 后会用真实抓取数据覆盖）",
+  "raw_news": []
+}

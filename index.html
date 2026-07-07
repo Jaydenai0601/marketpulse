@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>MarketPulse — 财经情绪日报</title>
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #0d0e12;
+  color: #e2e4e9;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 导航 */
+.nav {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px; height: 60px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  background: rgba(13,14,18,0.95);
+  backdrop-filter: blur(8px);
+  position: sticky; top: 0; z-index: 100;
+}
+.nav-logo { font-size: 18px; font-weight: 600; color: #e2e4e9; letter-spacing: -0.3px; }
+.nav-logo span { color: #5b8cff; }
+.nav-links { display: flex; gap: 4px; }
+.nav-link {
+  cursor: pointer; padding: 6px 16px; border-radius: 6px;
+  font-size: 14px; color: #8b8f99;
+  transition: all 0.2s; border: none; background: none;
+}
+.nav-link:hover { color: #c8ccd4; background: rgba(255,255,255,0.04); }
+.nav-link.active { color: #e2e4e9; background: rgba(91,140,255,0.1); }
+.nav-menu-btn {
+  display: none; background: none; border: none; color: #e2e4e9; cursor: pointer; padding: 6px;
+}
+
+/* 布局 */
+.container { max-width: 1100px; margin: 0 auto; padding: 40px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+
+/* 卡片 */
+.card {
+  background: #14161c;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px; padding: 28px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: rgba(255,255,255,0.1); }
+
+/* 标题 */
+.section-title { font-size: 15px; font-weight: 600; color: #e2e4e9; margin-bottom: 20px; letter-spacing: -0.2px; }
+.page-title { font-size: 26px; font-weight: 600; color: #e2e4e9; margin-bottom: 6px; }
+.page-subtitle { font-size: 14px; color: #6b7080; }
+
+/* 情绪标签 */
+.tag-bull { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; background: rgba(46,189,133,0.12); color: #2ebd85; }
+.tag-bear { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; background: rgba(235,87,87,0.12); color: #eb5757; }
+.tag-neutral { display: inline-block; padding: 3px 10px; border-radius: 4px; font-size: 12px; font-weight: 500; background: rgba(242,201,76,0.12); color: #f2c94c; }
+
+/* 指数 */
+.score-big { font-size: 44px; font-weight: 700; color: #e2e4e9; letter-spacing: -1px; }
+.score-bull { color: #2ebd85; }
+.score-bear { color: #eb5757; }
+
+/* 进度条 */
+.meter { width: 100%; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; }
+.meter-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+/* 按钮 */
+.btn {
+  padding: 10px 20px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+  background: #1a1d25; color: #c8ccd4; font-size: 14px; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover { background: #1f232d; border-color: rgba(255,255,255,0.15); }
+.btn-primary {
+  padding: 10px 24px; border-radius: 8px; border: none;
+  background: #5b8cff; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-primary:hover { background: #4a7aee; }
+
+/* 日期选择器 */
+.date-picker {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.date-select {
+  padding: 8px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);
+  background: #1a1d25; color: #e2e4e9; font-size: 14px; cursor: pointer; outline: none;
+}
+.date-select:focus { border-color: #5b8cff; }
+
+/* 列表行 */
+.list-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.list-row:last-child { border-bottom: none; }
+
+/* 事件卡片 */
+.event-card { background: #14161c; border: 1px solid rgba(255,255,255,0.06); border-radius: 10px; padding: 20px; }
+.event-card:hover { border-color: rgba(255,255,255,0.1); }
+
+/* 板块展开 */
+.sector-item {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.sector-item:hover { background: rgba(255,255,255,0.02); }
+.sector-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0;
+}
+.sector-left { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; }
+.sector-name { font-size: 14px; font-weight: 500; color: #e2e4e9; min-width: 70px; }
+.sector-score { font-size: 15px; font-weight: 600; min-width: 34px; text-align: right; }
+.sector-bar-wrap { flex: 1; height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; min-width: 60px; }
+.sector-bar { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+.sector-chevron { color: #6b7080; font-size: 12px; transition: transform 0.2s; margin-left: 10px; }
+.sector-chevron.open { transform: rotate(180deg); }
+.sector-detail {
+  max-height: 0; overflow: hidden;
+  transition: max-height 0.25s ease, padding 0.25s ease;
+}
+.sector-detail.open {
+  max-height: 300px;
+  padding-bottom: 14px;
+}
+.sector-event {
+  font-size: 13px; color: #8b8f99; padding: 6px 0 6px 24px;
+  position: relative; line-height: 1.5;
+}
+.sector-event::before {
+  content: '•'; position: absolute; left: 10px; color: #5b8cff;
+}
+
+/* 加载 / 错误 */
+.loading-wrap {
+  min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+}
+.spinner {
+  width: 32px; height: 32px; border: 3px solid rgba(255,255,255,0.08);
+  border-top-color: #5b8cff; border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.error-box {
+  background: rgba(235,87,87,0.1); border: 1px solid rgba(235,87,87,0.2);
+  color: #eb5757; padding: 16px 20px; border-radius: 8px; font-size: 14px;
+}
+
+/* 动画 */
+@keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+.fade-up { animation: fadeUp 0.5s ease forwards; opacity: 0; }
+.delay-1 { animation-delay: 0.08s; }
+.delay-2 { animation-delay: 0.16s; }
+.delay-3 { animation-delay: 0.24s; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: #0d0e12; }
+::-webkit-scrollbar-thumb { background: #2a2d38; border-radius: 3px; }
+
+/* ===== 移动端适配 ===== */
+@media (max-width: 768px) {
+  .nav { padding: 0 16px; height: 56px; }
+  .nav-logo { font-size: 16px; }
+  .nav-menu-btn { display: block; }
+  .nav-links {
+    position: absolute; top: 56px; left: 0; right: 0;
+    flex-direction: column; gap: 0; padding: 8px 16px 16px;
+    background: rgba(13,14,18,0.98); border-bottom: 1px solid rgba(255,255,255,0.06);
+    display: none;
+  }
+  .nav-links.open { display: flex; }
+  .nav-link { padding: 12px 8px; border-radius: 6px; width: 100%; text-align: left; }
+
+  .container { padding: 20px 16px; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 14px; }
+  .card { padding: 20px; border-radius: 10px; }
+
+  .page-title { font-size: 22px; }
+  .page-subtitle { font-size: 13px; }
+  .score-big { font-size: 36px; }
+
+  .list-row {
+    flex-direction: column; align-items: flex-start; gap: 8px; padding: 12px 0;
+  }
+  .list-row > div:last-child { align-self: flex-start; }
+
+  .sector-header { padding: 12px 0; }
+  .sector-left { gap: 10px; }
+  .sector-name { min-width: 60px; font-size: 13px; }
+  .sector-score { font-size: 14px; }
+
+  .date-picker { width: 100%; }
+  .date-select { flex: 1; min-width: 140px; }
+
+  .hero-title { font-size: 26px !important; }
+  .hero-subtitle { font-size: 14px !important; max-width: 100% !important; }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const { useState, useEffect, useRef, useMemo } = React;
+
+// ================== 工具函数 ==================
+const formatDate = (dateStr) => {
+  const d = new Date(dateStr.replace(/-/g, '/'));
+  if (isNaN(d)) return dateStr;
+  const weekdays = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 · ${weekdays[d.getDay()]}`;
+};
+
+const scoreColor = (score) => {
+  if (score > 0) return '#2ebd85';
+  if (score < 0) return '#eb5757';
+  return '#f2c94c';
+};
+
+const sentimentClass = (label) => {
+  if (label.includes('偏多')) return 'tag-bull';
+  if (label.includes('偏空')) return 'tag-bear';
+  return 'tag-neutral';
+};
+
+const scoreClass = (score) => {
+  if (score > 55) return 'score-bull';
+  if (score < 45) return 'score-bear';
+  return '';
+};
+
+// ================== 数据加载 hook ==================
+function useData(selectedDate) {
+  const [history, setHistory] = useState([]);
+  const [daily, setDaily] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        // 1. 加载历史索引
+        const historyRes = await fetch('data/history.json');
+        if (!historyRes.ok) throw new Error('无法加载 history.json');
+        const historyData = await historyRes.json();
+        if (!cancelled) setHistory(historyData);
+
+        // 2. 确定要加载的日期
+        const targetDate = selectedDate || (historyData[0] && historyData[0].date);
+        if (!targetDate) throw new Error('没有可用日期');
+
+        // 3. 加载该日期归档；如不存在则回退到 daily_data.json
+        let dailyRes = await fetch(`data/archive/${targetDate}.json`);
+        if (!dailyRes.ok) {
+          if (targetDate === (historyData[0] && historyData[0].date)) {
+            dailyRes = await fetch('data/daily_data.json');
+          }
+        }
+        if (!dailyRes.ok) throw new Error(`无法加载 ${targetDate} 的数据`);
+        const dailyData = await dailyRes.json();
+        if (!cancelled) setDaily(dailyData);
+      } catch (e) {
+        if (!cancelled) setError(e.message);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [selectedDate]);
+
+  return { history, daily, loading, error };
+}
+
+function useAllArchives(history) {
+  const [archives, setArchives] = useState({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!history || !history.length) return;
+    let cancelled = false;
+    async function load() {
+      setLoading(true);
+      const results = {};
+      await Promise.all(history.map(async (h) => {
+        try {
+          const res = await fetch(`data/archive/${h.date}.json`);
+          if (res.ok) results[h.date] = await res.json();
+        } catch (e) { /* ignore missing archive */ }
+      }));
+      if (!cancelled) {
+        setArchives(results);
+        setLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [history]);
+
+  return { archives, loading };
+}
+
+// ================== 通用组件 ==================
+function Loading() {
+  return (
+    <div className="loading-wrap">
+      <div className="spinner" />
+      <div style={{ color: '#6b7080', fontSize: 14 }}>正在加载市场数据...</div>
+    </div>
+  );
+}
+
+function ErrorBox({ message }) {
+  return (
+    <div className="container">
+      <div className="card" style={{ marginTop: 40 }}>
+        <div className="error-box">加载失败：{message}</div>
+        <div style={{ marginTop: 12, color: '#6b7080', fontSize: 13 }}>
+          请确保通过本地服务器（如 <code style={{ background: 'rgba(255,255,255,0.05)', padding: '2px 6px', borderRadius: 4 }}>npx serve</code>）打开本站，而非直接双击 HTML 文件。
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DatePicker({ history, selectedDate, onChange, label }) {
+  return (
+    <div className="date-picker">
+      {label && <span style={{ color: '#6b7080', fontSize: 14 }}>{label}</span>}
+      <select className="date-select" value={selectedDate || ''} onChange={(e) => onChange(e.target.value)}>
+        {history.map((h) => (
+          <option key={h.date} value={h.date}>{h.date} · {h.sentiment}（{h.score}）</option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
+function SentimentTag({ label }) {
+  return <span className={sentimentClass(label)}>{label}</span>;
+}
+
+// ================== 导航 ==================
+function Nav({ current, setPage }) {
+  const [open, setOpen] = useState(false);
+  const links = [
+    { id: 'home', label: '首页' },
+    { id: 'daily', label: '日报详情' },
+    { id: 'history', label: '历史回顾' },
+  ];
+  return (
+    <nav className="nav">
+      <div className="nav-logo" onClick={() => { setPage('home'); setOpen(false); }} style={{ cursor: 'pointer' }}>
+        Market<span>Pulse</span>
+      </div>
+      <button className="nav-menu-btn" onClick={() => setOpen(!open)} aria-label="菜单">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+      <div className={`nav-links ${open ? 'open' : ''}`}>
+        {links.map((l) => (
+          <div
+            key={l.id}
+            className={`nav-link ${current === l.id ? 'active' : ''}`}
+            onClick={() => { setPage(l.id); setOpen(false); }}
+          >
+            {l.label}
+          </div>
+        ))}
+      </div>
+    </nav>
+  );
+}
+
+// ================== 首页 ==================
+function HomePage({ setPage }) {
+  const { history, daily, loading, error } = useData();
+  const [animatedScore, setAnimatedScore] = useState(0);
+
+  useEffect(() => {
+    if (!daily) return;
+    const target = daily.overall_score;
+    let start = 0;
+    const timer = setInterval(() => {
+      start += 1;
+      setAnimatedScore(Math.min(Math.round(start / 20 * target), target));
+      if (start >= 20) clearInterval(timer);
+    }, 30);
+    return () => clearInterval(timer);
+  }, [daily]);
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorBox message={error} />;
+
+  const latest = daily || {};
+  const topEvents = latest.top_events || [];
+  const sectors = latest.sectors || [];
+  const positiveCount = sectors.filter((s) => s.score > 0).length;
+  const negativeCount = sectors.filter((s) => s.score < 0).length;
+
+  return (
+    <div className="container">
+      {/* Hero */}
+      <div style={{ textAlign: 'center', padding: '60px 0 32px' }} className="fade-up">
+        <h1 className="hero-title" style={{ fontSize: '36px', fontWeight: 600, color: '#e2e4e9', letterSpacing: '-0.5px' }}>
+          AI 驱动的市场情绪雷达
+        </h1>
+        <p className="hero-subtitle" style={{ color: '#6b7080', marginTop: '12px', fontSize: '15px', maxWidth: 480, lineHeight: 1.6, margin: '12px auto 0' }}>
+          每日自动抓取财经新闻，AI 分析情绪、生成可视化日报
+        </p>
+        <div style={{ marginTop: '28px' }}>
+          <button className="btn-primary" onClick={() => setPage('daily')}>查看今日日报</button>
+        </div>
+      </div>
+
+      {/* 今日情绪 */}
+      <div className="grid-3" style={{ marginTop: '32px' }}>
+        <div className="card fade-up" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '13px', color: '#6b7080', marginBottom: 10 }}>最新市场情绪</div>
+          <div className={`score-big ${scoreClass(latest.overall_score)}`}>{animatedScore}</div>
+          <div style={{ marginTop: 8 }}><SentimentTag label={latest.sentiment_label} /></div>
+          <div style={{ marginTop: 10, fontSize: '13px', color: '#6b7080' }}>
+            日期 {latest.date}
+          </div>
+          <div className="meter" style={{ marginTop: 16 }}>
+            <div className="meter-fill" style={{ width: `${animatedScore}%`, background: scoreColor(latest.overall_score - 50) }} />
+          </div>
+        </div>
+        <div className="card fade-up delay-1" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '13px', color: '#6b7080', marginBottom: 10 }}>分析新闻</div>
+          <div style={{ fontSize: '36px', fontWeight: 700, color: '#e2e4e9' }}>{latest.news_count || 0}</div>
+          <div style={{ fontSize: '13px', color: '#6b7080', marginTop: 8 }}>条</div>
+        </div>
+        <div className="card fade-up delay-2" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '13px', color: '#6b7080', marginBottom: 10 }}>覆盖板块</div>
+          <div style={{ fontSize: '36px', fontWeight: 700, color: '#e2e4e9' }}>{sectors.length}</div>
+          <div style={{ fontSize: '13px', color: '#6b7080', marginTop: 8 }}>
+            偏多 {positiveCount} · 偏空 {negativeCount}
+          </div>
+        </div>
+      </div>
+
+      {/* 功能 */}
+      <div style={{ marginTop: '48px' }}>
+        <div className="section-title">核心功能</div>
+        <div className="grid-3">
+          {[
+            { title: '自动采集', desc: '每日抓取东方财富、财联社、新浪财经等主流财经源' },
+            { title: 'AI 情绪分析', desc: '大模型逐条分析情绪、强度、影响板块与关键数据' },
+            { title: '可视化日报', desc: '自动生成结构化日报，含板块热力与驱动事件' },
+          ].map((f, i) => (
+            <div key={i} className={`card fade-up delay-${i+1}`}>
+              <div style={{ fontSize: '15px', fontWeight: 600, color: '#e2e4e9', marginBottom: 8 }}>{f.title}</div>
+              <div style={{ fontSize: '14px', color: '#6b7080', lineHeight: 1.6 }}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 最新日报预览 */}
+      <div style={{ marginTop: '48px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: 10 }}>
+          <div className="section-title" style={{ margin: 0 }}>最新日报 · {latest.date}</div>
+          <button className="btn" onClick={() => setPage('daily')}>查看完整日报 →</button>
+        </div>
+        <div className="card fade-up">
+          <div style={{ fontSize: '13px', color: '#6b7080', marginBottom: '16px' }}>
+            {latest.news_count} 条新闻 · {sectors.length} 个板块
+          </div>
+          <div className="grid-3">
+            {topEvents.slice(0, 3).map((e, i) => (
+              <div key={i} className="event-card">
+                <div style={{ marginBottom: 10 }}>
+                  <span className={e.sentiment === '利好' ? 'tag-bull' : 'tag-bear'}>{e.sentiment}·{e.intensity}</span>
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 500, color: '#e2e4e9', marginBottom: 8, lineHeight: 1.5 }}>{e.title}</div>
+                <div style={{ fontSize: '12px', color: '#6b7080' }}>{e.sectors}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ================== 板块展开列表 ==================
+function SectorList({ sectors }) {
+  const [open, setOpen] = useState(() => {
+    const first = sectors.findIndex((s) => Math.abs(s.score) >= 3);
+    return first >= 0 ? sectors[first].name : null;
+  });
+
+  return (
+    <div>
+      {sectors.map((s) => {
+        const isOpen = open === s.name;
+        const color = scoreColor(s.score);
+        const barWidth = Math.min(Math.abs(s.score) / 5 * 100, 100);
+        return (
+          <div key={s.name} className="sector-item" onClick={() => setOpen(isOpen ? null : s.name)}>
+            <div className="sector-header">
+              <div className="sector-left">
+                <span className="sector-name">{s.name}</span>
+                <span className="sector-score" style={{ color }}>{s.score > 0 ? `+${s.score}` : s.score}</span>
+                <div className="sector-bar-wrap">
+                  <div className="sector-bar" style={{ width: `${barWidth}%`, background: color, marginLeft: s.score < 0 ? 'auto' : 0, marginRight: s.score < 0 ? 0 : 'auto' }} />
+                </div>
+                <SentimentTag label={s.label} />
+              </div>
+              <span className={`sector-chevron ${isOpen ? 'open' : ''}`}>▼</span>
+            </div>
+            <div className={`sector-detail ${isOpen ? 'open' : ''}`}>
+              {(s.events || []).map((ev, i) => (
+                <div key={i} className="sector-event">{ev}</div>
+              ))}
+              {(!s.events || s.events.length === 0) && (
+                <div className="sector-event">暂无事件摘要</div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ================== 日报详情页 ==================
+function DailyPage() {
+  const [selectedDate, setSelectedDate] = useState(null);
+  const { history, daily, loading, error } = useData(selectedDate);
+  const sectorChartRef = useRef(null);
+
+  useEffect(() => {
+    if (!sectorChartRef.current || !daily) return;
+    const chart = echarts.init(sectorChartRef.current);
+    const sectors = daily.sectors || [];
+    const option = {
+      backgroundColor: 'transparent',
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, backgroundColor: '#14161c', borderColor: 'rgba(255,255,255,0.08)', textStyle: { color: '#e2e4e9', fontSize: 13 } },
+      grid: { left: '3%', right: '4%', bottom: '3%', top: '8%', containLabel: true },
+      xAxis: { type: 'category', data: sectors.map((s) => s.name), axisLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } }, axisLabel: { color: '#6b7080', fontSize: 12 } },
+      yAxis: { type: 'value', min: -5, max: 5, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.03)' } }, axisLabel: { color: '#6b7080', fontSize: 12 } },
+      series: [{
+        data: sectors.map((s) => ({
+          value: s.score,
+          itemStyle: { color: scoreColor(s.score), borderRadius: s.score >= 0 ? [3, 3, 0, 0] : [0, 0, 3, 3] }
+        })),
+        type: 'bar', barWidth: '45%'
+      }]
+    };
+    chart.setOption(option);
+    const handleResize = () => chart.resize();
+    window.addEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); chart.dispose(); };
+  }, [daily]);
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorBox message={error} />;
+  if (!daily) return null;
+
+  const d = daily;
+  const sectors = d.sectors || [];
+  const topEvents = d.top_events || [];
+
+  // 计算环比（从历史索引里找前一天）
+  const idx = history.findIndex((h) => h.date === d.date);
+  const prev = history[idx + 1];
+  const change = prev ? d.overall_score - prev.score : 0;
+  const changePct = prev ? Math.round((change / prev.score) * 100) : 0;
+
+  return (
+    <div className="container">
+      <div style={{ padding: '32px 0 8px' }} className="fade-up">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <div className="page-title">市场情绪日报</div>
+            <div className="page-subtitle">{formatDate(d.date)}</div>
+          </div>
+          <DatePicker
+            label="切换日期"
+            history={history}
+            selectedDate={d.date}
+            onChange={(date) => setSelectedDate(date)}
+          />
+        </div>
+      </div>
+
+      {/* 整体情绪 */}
+      <div className="grid-2" style={{ marginTop: '24px' }}>
+        <div className="card fade-up">
+          <div style={{ fontSize: '13px', color: '#6b7080', marginBottom: 12 }}>整体情绪</div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, flexWrap: 'wrap' }}>
+            <span className={`score-big ${scoreClass(d.overall_score)}`}>{d.overall_score}</span>
+            <SentimentTag label={d.sentiment_label} />
+          </div>
+          <div style={{ marginTop: 10, fontSize: '14px', color: '#6b7080' }}>
+            较昨日 {change >= 0 ? '+' : ''}{change}
+            <span style={{ color: change >= 0 ? '#2ebd85' : '#eb5757', marginLeft: 6 }}>
+              {change >= 0 ? '↗' : '↘'} {change >= 0 ? '+' : ''}{changePct}%
+            </span>
+            {prev && <span style={{ marginLeft: 8 }}>（昨日 {prev.score}）</span>}
+          </div>
+          <div style={{ marginTop: 10, fontSize: '13px', color: '#8b8f99' }}>
+            {d.report_text ? d.report_text.split('核心驱动：')[1]?.split('\n')[0] || '暂无核心驱动摘要' : '暂无核心驱动摘要'}
+          </div>
+          <div className="meter" style={{ marginTop: 16 }}>
+            <div className="meter-fill" style={{ width: `${d.overall_score}%`, background: scoreColor(d.overall_score - 50) }} />
+          </div>
+        </div>
+        <div className="card fade-up delay-1">
+          <div style={{ fontSize: '13px', color: '#6b7080', marginBottom: 12 }}>数据概览</div>
+          <div className="grid-2" style={{ gap: 12 }}>
+            {[
+              { label: '分析新闻', value: d.news_count || 0 },
+              { label: '利好', value: d.bull_count || 0 },
+              { label: '利空', value: d.bear_count || 0 },
+              { label: '中性', value: d.neutral_count || 0 },
+            ].map((item, i) => (
+              <div key={i} style={{ textAlign: 'center', padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: 8 }}>
+                <div style={{ fontSize: '12px', color: '#6b7080' }}>{item.label}</div>
+                <div style={{ fontSize: '22px', fontWeight: 600, color: '#e2e4e9', marginTop: 4 }}>{item.value}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* 板块热力 */}
+      <div className="card fade-up delay-2" style={{ marginTop: '20px' }}>
+        <div className="section-title">板块情绪热力</div>
+        <div ref={sectorChartRef} style={{ width: '100%', height: 300 }} />
+      </div>
+
+      {/* 板块详情展开 */}
+      <div className="card fade-up delay-2" style={{ marginTop: '20px' }}>
+        <div className="section-title">板块详情（点击展开）</div>
+        <SectorList sectors={sectors} />
+      </div>
+
+      {/* Top 3 */}
+      <div style={{ marginTop: '24px' }}>
+        <div className="section-title">今日 Top 3 驱动事件</div>
+        <div className="grid-3">
+          {topEvents.slice(0, 3).map((e, i) => (
+            <div key={i} className={`card fade-up delay-${i+1}`}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#5b8cff', minWidth: 20 }}>{i + 1}</span>
+                <span className={e.sentiment === '利好' ? 'tag-bull' : 'tag-bear'}>{e.sentiment}·{e.intensity}</span>
+              </div>
+              <div style={{ fontSize: '14px', fontWeight: 500, color: '#e2e4e9', marginBottom: 10, lineHeight: 1.5 }}>{e.title}</div>
+              <div style={{ fontSize: '12px', color: '#6b7080', marginBottom: 10 }}>{e.sectors}</div>
+              <div style={{ fontSize: '13px', color: '#8b8f99', lineHeight: 1.6, padding: '10px', background: 'rgba(255,255,255,0.02)', borderRadius: 6 }}>
+                {e.impact}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 日报原文 */}
+      <div className="card fade-up" style={{ marginTop: '20px' }}>
+        <div className="section-title">日报原文</div>
+        <pre style={{ whiteSpace: 'pre-wrap', fontSize: '13px', color: '#8b8f99', lineHeight: 1.8, fontFamily: 'inherit' }}>
+          {d.report_text || '暂无日报文本'}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+// ================== 历史回顾页 ==================
+function HistoryPage() {
+  const { history, loading, error } = useData();
+  const { archives } = useAllArchives(history);
+  const trendRef = useRef(null);
+  const sectorTrendRef = useRef(null);
+
+  const sortedHistory = useMemo(() => [...history].reverse(), [history]);
+
+  useEffect(() => {
+    if (!trendRef.current || !sectorTrendRef.current || !history.length) return;
+
+    const chart1 = echarts.init(trendRef.current);
+    chart1.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger: 'axis', backgroundColor: '#14161c', borderColor: 'rgba(255,255,255,0.08)', textStyle: { color: '#e2e4e9', fontSize: 13 } },
+      grid: { left: '3%', right: '4%', bottom: '3%', top: '8%', containLabel: true },
+      xAxis: { type: 'category', data: sortedHistory.map((h) => h.date.slice(5)), axisLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } }, axisLabel: { color: '#6b7080', fontSize: 12 } },
+      yAxis: { type: 'value', min: 40, max: 80, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.03)' } }, axisLabel: { color: '#6b7080', fontSize: 12 } },
+      series: [{
+        data: sortedHistory.map((h) => h.score),
+        type: 'line', smooth: true, symbol: 'circle', symbolSize: 6,
+        lineStyle: { color: '#5b8cff', width: 2.5 },
+        itemStyle: { color: '#5b8cff' },
+        areaStyle: { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: 'rgba(91,140,255,0.15)' }, { offset: 1, color: 'rgba(91,140,255,0.01)' }] } }
+      }]
+    });
+
+    // 板块情绪轮动：取所有归档中共同存在的板块
+    const sectorMap = {};
+    sortedHistory.forEach((h) => {
+      const arc = archives[h.date];
+      if (!arc) return;
+      (arc.sectors || []).forEach((s) => {
+        if (!sectorMap[s.name]) sectorMap[s.name] = [];
+      });
+    });
+    const sectorNames = Object.keys(sectorMap);
+    sortedHistory.forEach((h) => {
+      const arc = archives[h.date];
+      sectorNames.forEach((name) => {
+        const s = arc?.sectors?.find((x) => x.name === name);
+        sectorMap[name].push(s ? s.score : null);
+      });
+    });
+
+    const colors = ['#2ebd85', '#5b8cff', '#eb5757', '#f2c94c', '#a78bfa', '#f472b6', '#22d3ee', '#a3e635'];
+    const chart2 = echarts.init(sectorTrendRef.current);
+    chart2.setOption({
+      backgroundColor: 'transparent',
+      tooltip: { trigger: 'axis', backgroundColor: '#14161c', borderColor: 'rgba(255,255,255,0.08)', textStyle: { color: '#e2e4e9', fontSize: 13 } },
+      legend: { data: sectorNames, textStyle: { color: '#6b7080', fontSize: 11 }, top: 0, type: 'scroll' },
+      grid: { left: '3%', right: '4%', bottom: '3%', top: '18%', containLabel: true },
+      xAxis: { type: 'category', data: sortedHistory.map((h) => h.date.slice(5)), axisLine: { lineStyle: { color: 'rgba(255,255,255,0.06)' } }, axisLabel: { color: '#6b7080', fontSize: 12 } },
+      yAxis: { type: 'value', min: -5, max: 5, splitLine: { lineStyle: { color: 'rgba(255,255,255,0.03)' } }, axisLabel: { color: '#6b7080', fontSize: 12 } },
+      series: sectorNames.map((name, i) => ({
+        name, type: 'line', smooth: true, data: sectorMap[name],
+        lineStyle: { color: colors[i % colors.length], width: 2 },
+        itemStyle: { color: colors[i % colors.length] },
+        symbol: 'circle', symbolSize: 5,
+        connectNulls: true
+      }))
+    });
+
+    const handleResize = () => { chart1.resize(); chart2.resize(); };
+    window.addEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); chart1.dispose(); chart2.dispose(); };
+  }, [sortedHistory, archives]);
+
+  if (loading) return <Loading />;
+  if (error) return <ErrorBox message={error} />;
+
+  return (
+    <div className="container">
+      <div style={{ padding: '32px 0 8px' }} className="fade-up">
+        <div className="page-title">历史回顾</div>
+        <div className="page-subtitle">近7日市场情绪变化与板块轮动</div>
+      </div>
+
+      <div className="grid-2" style={{ marginTop: '24px' }}>
+        <div className="card fade-up">
+          <div className="section-title">市场整体情绪趋势</div>
+          <div ref={trendRef} style={{ width: '100%', height: 280 }} />
+        </div>
+        <div className="card fade-up delay-1">
+          <div className="section-title">板块情绪轮动</div>
+          <div ref={sectorTrendRef} style={{ width: '100%', height: 280 }} />
+        </div>
+      </div>
+
+      <div className="card" style={{ marginTop: '20px' }}>
+        <div className="section-title">历史日报归档</div>
+        <div>
+          {history.map((d, i) => (
+            <div key={i} className="list-row">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '14px', color: '#6b7080', minWidth: 100 }}>{d.date}</span>
+                <SentimentTag label={d.sentiment} />
+                <span style={{ fontSize: '14px', fontWeight: 600, color: '#e2e4e9', minWidth: 30 }}>{d.score}</span>
+              </div>
+              <div style={{ fontSize: '13px', color: '#6b7080' }}>
+                较昨日 {d.change} · {d.sectors} 个板块
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ================== 主应用 ==================
+function App() {
+  const [page, setPage] = useState('home');
+  const renderPage = () => {
+    switch (page) {
+      case 'home': return <HomePage setPage={setPage} />;
+      case 'daily': return <DailyPage />;
+      case 'history': return <HistoryPage />;
+      default: return <HomePage setPage={setPage} />;
+    }
+  };
+  return (
+    <div>
+      <Nav current={page} setPage={setPage} />
+      {renderPage()}
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App />);
+</script>
+</body>
+</html>
