@@ -1,5 +1,12 @@
 [
   {
+    "date": "2026-07-22",
+    "sentiment": "偏多",
+    "score": 56,
+    "change": "+0%",
+    "sectors": 40
+  },
+  {
     "date": "2026-07-21",
     "sentiment": "中性",
     "score": 51,
