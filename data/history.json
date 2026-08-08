@@ -1,5 +1,12 @@
 [
   {
+    "date": "2026-08-08",
+    "sentiment": "中性",
+    "score": 48,
+    "change": "+0%",
+    "sectors": 36
+  },
+  {
     "date": "2026-08-07",
     "sentiment": "中性",
     "score": 50,
@@ -200,13 +207,6 @@
     "sentiment": "偏多",
     "score": 68,
     "change": "+12%",
-    "sectors": 8
-  },
-  {
-    "date": "2026-07-01",
-    "sentiment": "中性",
-    "score": 56,
-    "change": "-4%",
     "sectors": 8
   }
 ]
